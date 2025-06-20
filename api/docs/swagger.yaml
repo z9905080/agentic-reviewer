@@ -1,0 +1,92 @@
+basePath: /api/v1
+definitions:
+  cv-analyzer_internal_interfaces_api_dto.AnalysisRequest:
+    properties:
+      cv_path:
+        type: string
+      jd_path:
+        type: string
+    required:
+    - cv_path
+    - jd_path
+    type: object
+  cv-analyzer_internal_interfaces_api_dto.AnalysisResponse:
+    properties:
+      analysis_id:
+        type: string
+      analyzed_at:
+        type: string
+      cv_id:
+        type: string
+      cv_path:
+        type: string
+      jd_id:
+        type: string
+      jd_path:
+        type: string
+      matching_keywords:
+        items:
+          type: string
+        type: array
+      missing_keywords:
+        items:
+          type: string
+        type: array
+      score:
+        type: number
+      summary:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a server for analyzing CVs against Job Descriptions.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: CV Analyzer API
+  version: "1.0"
+paths:
+  /analyze:
+    post:
+      consumes:
+      - application/json
+      description: Receives file paths for a CV and a Job Description, performs an
+        analysis, and returns the matching score and summary.
+      parameters:
+      - description: Analysis Request
+        in: body
+        name: analysisRequest
+        required: true
+        schema:
+          $ref: '#/definitions/cv-analyzer_internal_interfaces_api_dto.AnalysisRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/cv-analyzer_internal_interfaces_api_dto.AnalysisResponse'
+        "400":
+          description: 'Error: Invalid request payload'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 'Error: Internal server error'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Analyze a CV against a Job Description
+      tags:
+      - Analysis
+schemes:
+- http
+- https
+swagger: "2.0"

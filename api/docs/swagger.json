@@ -1,0 +1,136 @@
+{
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a server for analyzing CVs against Job Descriptions.",
+        "title": "CV Analyzer API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
+    "paths": {
+        "/analyze": {
+            "post": {
+                "description": "Receives file paths for a CV and a Job Description, performs an analysis, and returns the matching score and summary.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Analysis"
+                ],
+                "summary": "Analyze a CV against a Job Description",
+                "parameters": [
+                    {
+                        "description": "Analysis Request",
+                        "name": "analysisRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/cv-analyzer_internal_interfaces_api_dto.AnalysisRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/cv-analyzer_internal_interfaces_api_dto.AnalysisResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Error: Invalid request payload",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error: Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "cv-analyzer_internal_interfaces_api_dto.AnalysisRequest": {
+            "type": "object",
+            "required": [
+                "cv_path",
+                "jd_path"
+            ],
+            "properties": {
+                "cv_path": {
+                    "type": "string"
+                },
+                "jd_path": {
+                    "type": "string"
+                }
+            }
+        },
+        "cv-analyzer_internal_interfaces_api_dto.AnalysisResponse": {
+            "type": "object",
+            "properties": {
+                "analysis_id": {
+                    "type": "string"
+                },
+                "analyzed_at": {
+                    "type": "string"
+                },
+                "cv_id": {
+                    "type": "string"
+                },
+                "cv_path": {
+                    "type": "string"
+                },
+                "jd_id": {
+                    "type": "string"
+                },
+                "jd_path": {
+                    "type": "string"
+                },
+                "matching_keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "missing_keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "score": {
+                    "type": "number"
+                },
+                "summary": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
