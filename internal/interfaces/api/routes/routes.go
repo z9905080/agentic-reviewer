@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"cv-analyzer/internal/application/usecases"
+	// "cv-analyzer/internal/application/usecases" // No longer needed as SetupRouter takes AnalysisHandler
 	"cv-analyzer/internal/interfaces/api/handlers"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"

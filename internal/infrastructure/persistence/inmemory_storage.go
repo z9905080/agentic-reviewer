@@ -90,6 +90,9 @@ func (s *InMemoryStorage) SaveAnalysisResult(result *analysis.AnalysisResult) er
 	if result.ID == "" {
 		return fmt.Errorf("analysis result ID cannot be empty")
 	}
+	if _, exists := s.analyses[result.ID]; exists {
+		return fmt.Errorf("analysis result with ID %s already exists", result.ID)
+	}
 	s.analyses[result.ID] = result
 	// fmt.Printf("In-memory: Saved AnalysisResult ID: %s\n", result.ID) // Optional logging
 	return nil

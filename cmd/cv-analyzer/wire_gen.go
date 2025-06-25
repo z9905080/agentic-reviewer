@@ -19,10 +19,6 @@ import (
 	"os"
 )
 
-import (
-	_ "cv-analyzer/api/docs"
-)
-
 // Injectors from wire.go:
 
 // --- Main Injector ---
@@ -54,23 +50,24 @@ func provideDummyAnalysisService() ports.AnalysisService {
 	apiKey := os.Getenv("OPENAI_API_KEY")
 
 	oa, err := llm.NewOpenAIAdapter(apiKey)
-	if err != nil {
-
-		panic(fmt.Sprintf("Failed to init OpenAIAdapter: %v. Make sure OPENAI_API_KEY is set if intending to use it, or configure a fallback dummy service.", err))
+	if err == nil {
+		fmt.Println("INFO: Using OpenAIAdapter for AnalysisService.")
+		return oa
 	}
-	return oa
+	fmt.Printf("WARN: OpenAIAdapter initialization failed (%v), falling back to DummyAnalysisService.\n", err)
+	return llm.NewDummyAnalysisService()
 }
 
 func provideAnalyzeCVUseCase(
 	parserRouter ports.FileParserRouter,
 	analysisService ports.AnalysisService,
 	storageService ports.StorageService,
-) *usecases.AnalyzeCVUseCase {
+) usecases.AnalyzeCVUseCase {
 	return usecases.NewAnalyzeCVUseCase(parserRouter, analysisService, storageService)
 }
 
-func provideAnalysisHandler(useCase *usecases.AnalyzeCVUseCase) *handlers.AnalysisHandler {
-	return handlers.NewAnalysisHandler(*useCase)
+func provideAnalysisHandler(useCase usecases.AnalyzeCVUseCase) *handlers.AnalysisHandler {
+	return handlers.NewAnalysisHandler(useCase)
 }
 
 // provideGinEngine initializes the Gin engine and sets up routes.

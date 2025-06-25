@@ -52,17 +52,19 @@ func provideDummyAnalysisService() ports.AnalysisService {
     //     // return llm.NewDummyAnalysisService() // Placeholder from previous setup
     // }
 
-    oa, err := llm.NewOpenAIAdapter(apiKey)
-    if err != nil {
-        // This is tricky in a provider. Panicking or returning a default/error.
-        // For wire, providers should ideally not fail or handle config this way.
-        // A Config struct is better.
-        // For now, let's assume it can return an error.
-        // return nil, err // Wire will handle this if the injector returns error
-        // Forcing a panic if critical service fails and no fallback configured
-        panic(fmt.Sprintf("Failed to init OpenAIAdapter: %v. Make sure OPENAI_API_KEY is set if intending to use it, or configure a fallback dummy service.", err))
+	// Attempt to create OpenAIAdapter
+	oa, err := llm.NewOpenAIAdapter(apiKey) // NewOpenAIAdapter checks env if apiKey is ""
+	if err == nil {
+		// Use zlog from main package if available, or fmt for now if this is too early for zlog
+		// zlog.Info().Msg("Using OpenAIAdapter for AnalysisService.") // Cannot use zlog here easily before main initializes it
+		fmt.Println("INFO: Using OpenAIAdapter for AnalysisService.")
+		return oa
     }
-    return oa
+
+	// Fallback to DummyAnalysisService if OpenAIAdapter fails (e.g., no API key)
+	// zlog.Warn().Err(err).Msg("OpenAIAdapter initialization failed, falling back to DummyAnalysisService.")
+	fmt.Printf("WARN: OpenAIAdapter initialization failed (%v), falling back to DummyAnalysisService.\n", err)
+	return llm.NewDummyAnalysisService() // Ensure this constructor exists and returns ports.AnalysisService
 }
 
 // --- Providers for Application Layer ---
@@ -70,16 +72,16 @@ func provideDummyAnalysisService() ports.AnalysisService {
 func provideAnalyzeCVUseCase(
 	parserRouter ports.FileParserRouter,
 	analysisService ports.AnalysisService,
-	storageService ports.StorageService, // Now a proper dependency
-) *usecases.AnalyzeCVUseCase { // Return pointer type for consistency
+	storageService ports.StorageService,
+) usecases.AnalyzeCVUseCase { // Return interface type
 	return usecases.NewAnalyzeCVUseCase(parserRouter, analysisService, storageService)
 }
 
 
 // --- Providers for Interface Layer (API Handlers & Router) ---
 
-func provideAnalysisHandler(useCase *usecases.AnalyzeCVUseCase) *apiHandlers.AnalysisHandler { // UseCase should be pointer
-	return apiHandlers.NewAnalysisHandler(*useCase) // NewAnalysisHandler expects a concrete usecases.AnalyzeCVUseCase
+func provideAnalysisHandler(useCase usecases.AnalyzeCVUseCase) *apiHandlers.AnalysisHandler { // useCase is now an interface
+	return apiHandlers.NewAnalysisHandler(useCase)
 }
 
 // provideGinEngine initializes the Gin engine and sets up routes.
